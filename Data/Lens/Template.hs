@@ -127,12 +127,3 @@ nameDeriveAccessors t namer = do
           ]
 
 #endif
-
--- first  :: Lens TestData Int
--- first = Lens $ \(TestData x y z) -> store (\x' -> TestData x' y z) x
--- 
--- second :: Lens TestData Int
--- second = lens (\(TestData x y z) -> y) (\y' (TestData x y z) -> (TestData x y' z))
--- 
--- third  :: Lens TestData String
--- third = Lens $ \(TestData x y z) -> store (\z' -> TestData x y z') z
