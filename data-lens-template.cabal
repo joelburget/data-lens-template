@@ -6,9 +6,9 @@ Author        : Joel Burget <joelburget@gmail.com>
 Maintainer    : Joel Burget <joelburget@gmail.com>
 Category      : Data
 Synopsis      : Utilities for Data.Lens
-Description   : Automatically derive a @Lens@ instance for your data type for use with @Data.Lens@.
+Description   : Automatically derive a @Lens@ instance for your data type for use with @Data.Lens@. Note: the code is derived from data-accessor-template <http://hackage.haskell.org/package/data-accessor-template> by Luke Palmer and Henning Thielemann.
 Build-Type    : Simple
-Cabal-Version : >= 1.2
+Cabal-Version : >= 1.6
 
 Library
   Build-Depends:
