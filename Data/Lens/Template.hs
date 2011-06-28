@@ -13,8 +13,6 @@ import Language.Haskell.TH.Syntax
 import Control.Monad (liftM, when)
 import Data.Maybe (catMaybes)
 import Data.List (nub)
-import Data.List.HT (viewR)
-
 import Data.Lens.Common
 
 -- |@deriveAccessors n@ where @n@ is the name of a data type
@@ -52,9 +50,10 @@ deriveAccessors :: Name -> Q [Dec]
 deriveAccessors n = nameDeriveAccessors n stripUnderscore
 
 stripUnderscore :: String -> Maybe String
-stripUnderscore s = do
-    (stem,'_') <- viewR s
-    return stem
+stripUnderscore [] = Nothing
+stripUnderscore s 
+   | last s == '_' = Just (init s)
+   | otherwise = Nothing
 
 namedFields :: Con -> [VarStrictType]
 namedFields (RecC _ fs) = fs
