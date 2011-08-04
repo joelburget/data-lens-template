@@ -1,5 +1,5 @@
 name:          data-lens-template
-version:       1.8.0.2
+version:       2.0
 license:       BSD3
 license-file:  LICENSE
 author:        Joel Burget <joelburget@gmail.com>
@@ -20,7 +20,7 @@ library
   other-extensions: TemplateHaskell
 
   build-depends: 
-    data-lens        >= 1.8 && < 1.9, 
+    data-lens        >= 2.0 && < 2.1, 
     base             >= 1.0 && < 5,
     template-haskell >= 2.4 && < 2.6
 
