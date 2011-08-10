@@ -52,7 +52,7 @@ deriveAccessors n = nameDeriveAccessors n stripUnderscore
 stripUnderscore :: String -> Maybe String
 stripUnderscore [] = Nothing
 stripUnderscore s 
-   | last s == '_' = Just (init s)
+   | head s == '_' = Just (tail s)
    | otherwise = Nothing
 
 namedFields :: Con -> [VarStrictType]
