@@ -6,7 +6,7 @@ routine to scour data type definitions and generate
 accessor objects for them automatically.
 -}
 module Data.Lens.Template (
-   nameDeriveAccessors, deriveAccessors,
+   nameMakeLenses, makeLenses,
    ) where
 
 import Language.Haskell.TH.Syntax
@@ -15,39 +15,39 @@ import Data.Maybe (catMaybes)
 import Data.List (nub)
 import Data.Lens.Common
 
--- |@deriveAccessors n@ where @n@ is the name of a data type
+-- |@makeLenses n@ where @n@ is the name of a data type
 -- declared with @data@ looks through all the declared fields
--- of the data type, and for each field ending in an underscore
+-- of the data type, and for each field beginning with an underscore
 -- generates an accessor of the same name without the underscore.
 --
--- It is "nameDeriveAccessors" n f where @f@ satisfies
+-- It is "nameMakeLenses" n f where @f@ satisfies
 --
--- > f (s ++ "_") = Just s
+-- > f ('_' : s) = Just s
 -- > f x = Nothing -- otherwise
 --
 -- For example, given the data type:
 --
 -- > data Score = Score { 
--- >   p1Score_ :: Int
--- > , p2Score_ :: Int
+-- >   _p1Score :: Int
+-- > , _p2Score :: Int
 -- > , rounds :: Int
 -- > }
 --
--- @deriveAccessors@ will generate the following objects:
+-- @makeLenses@ will generate the following objects:
 --
 -- > p1Score :: Lens Score Int
--- > p1Score = lens p1Score_ (\x s -> s { p1Score_ = x })
+-- > p1Score = lens _p1Score (\x s -> s { _p1Score = x })
 -- > p2Score :: Lens Score Int
--- > p2Score = lens p2Score_ (\x s -> s { p2Score_ = x })
+-- > p2Score = lens _p2Score (\x s -> s { _p2Score = x })
 --
 -- It is used with Template Haskell syntax like:
 --
--- > $( deriveAccessors ''TypeName )
+-- > $( makeLenses ''TypeName )
 --
 -- And will generate accessors when TypeName was declared
 -- using @data@ or @newtype@.
-deriveAccessors :: Name -> Q [Dec]
-deriveAccessors n = nameDeriveAccessors n stripUnderscore
+makeLenses :: Name -> Q [Dec]
+makeLenses n = nameMakeLenses n stripUnderscore
 
 stripUnderscore :: String -> Maybe String
 stripUnderscore [] = Nothing
@@ -60,13 +60,13 @@ namedFields (RecC _ fs) = fs
 namedFields (ForallC _ _ c) = namedFields c
 namedFields _ = []
 
--- |@nameDeriveAccessors n f@ where @n@ is the name of a data type
+-- |@nameMakeLenses n f@ where @n@ is the name of a data type
 -- declared with @data@ and @f@ is a function from names of fields
 -- in that data type to the name of the corresponding accessor. If
 -- @f@ returns @Nothing@, then no accessor is generated for that
 -- field.
-nameDeriveAccessors :: Name -> (String -> Maybe String) -> Q [Dec]
-nameDeriveAccessors t namer = do
+nameMakeLenses :: Name -> (String -> Maybe String) -> Q [Dec]
+nameMakeLenses t namer = do
     info <- reify t
     reified <- case info of
                     TyConI dec -> return dec
@@ -84,11 +84,11 @@ nameDeriveAccessors t namer = do
     errmsg = "Cannot derive accessors for name " ++ show t ++ " because"
           ++ "\n it is not a type declared with 'data' or 'newtype'"
           ++ "\n Did you remember to double-tick the type as in"
-          ++ "\n $(deriveAccessors ''TheType)?"
+          ++ "\n $(makeLenses ''TheType)?"
 
     nodefmsg = "Warning: No accessors generated from the name " ++ show t
-          ++ "\n If you are using deriveAccessors rather than"
-          ++ "\n nameDeriveAccessors, remember accessors are"
+          ++ "\n If you are using makeLenses rather than"
+          ++ "\n nameMakeLenses, remember accessors are"
           ++ "\n only generated for fields ending with an underscore"
 
     makeAccs :: [TyVarBndr] -> [VarStrictType] -> Q [Dec]
