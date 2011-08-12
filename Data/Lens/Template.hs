@@ -6,11 +6,11 @@ routine to scour data type definitions and generate
 accessor objects for them automatically.
 -}
 module Data.Lens.Template (
-   nameMakeLenses, makeLenses,
+   nameMakeLens, makeLenses, makeLens,
    ) where
 
 import Language.Haskell.TH.Syntax
-import Control.Monad (liftM, when)
+import Control.Monad (liftM, when, (<=<))
 import Data.Maybe (catMaybes)
 import Data.List (nub)
 import Data.Lens.Common
@@ -20,7 +20,7 @@ import Data.Lens.Common
 -- of the data type, and for each field beginning with an underscore
 -- generates an accessor of the same name without the underscore.
 --
--- It is "nameMakeLenses" n f where @f@ satisfies
+-- It is "nameMakeLens" n f where @f@ satisfies
 --
 -- > f ('_' : s) = Just s
 -- > f x = Nothing -- otherwise
@@ -46,8 +46,11 @@ import Data.Lens.Common
 --
 -- And will generate accessors when TypeName was declared
 -- using @data@ or @newtype@.
-makeLenses :: Name -> Q [Dec]
-makeLenses n = nameMakeLenses n stripUnderscore
+makeLenses :: [Name] -> Q [Dec]
+makeLenses = return . concat <=< mapM makeLens
+
+makeLens :: Name -> Q [Dec]
+makeLens n = nameMakeLens n stripUnderscore
 
 stripUnderscore :: String -> Maybe String
 stripUnderscore [] = Nothing
@@ -60,13 +63,13 @@ namedFields (RecC _ fs) = fs
 namedFields (ForallC _ _ c) = namedFields c
 namedFields _ = []
 
--- |@nameMakeLenses n f@ where @n@ is the name of a data type
+-- |@nameMakeLens n f@ where @n@ is the name of a data type
 -- declared with @data@ and @f@ is a function from names of fields
 -- in that data type to the name of the corresponding accessor. If
 -- @f@ returns @Nothing@, then no accessor is generated for that
 -- field.
-nameMakeLenses :: Name -> (String -> Maybe String) -> Q [Dec]
-nameMakeLenses t namer = do
+nameMakeLens :: Name -> (String -> Maybe String) -> Q [Dec]
+nameMakeLens t namer = do
     info <- reify t
     reified <- case info of
                     TyConI dec -> return dec
@@ -88,7 +91,7 @@ nameMakeLenses t namer = do
 
     nodefmsg = "Warning: No accessors generated from the name " ++ show t
           ++ "\n If you are using makeLenses rather than"
-          ++ "\n nameMakeLenses, remember accessors are"
+          ++ "\n nameMakeLens, remember accessors are"
           ++ "\n only generated for fields ending with an underscore"
 
     makeAccs :: [TyVarBndr] -> [VarStrictType] -> Q [Dec]
